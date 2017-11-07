@@ -23,7 +23,7 @@ public class HandleShares
     }
     public static Intent constructIntentMultiple(String title, File... files)
     {
-        ArrayList<Uri> uris = new ArrayList<Uri>();
+        ArrayList<Uri> uris = new ArrayList<>();
         for(File file : files)
         {
             uris.add(Uri.fromFile(file));
@@ -35,11 +35,12 @@ public class HandleShares
         intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
         return Intent.createChooser(intent, title);
     }
-    public static String getMimeType(String extension)
+
+    private static String getMimeType(String extension)
     {
         if(mimeTypes == null)
         {
-            mimeTypes = new HashMap<String, String>();
+            mimeTypes = new HashMap<>();
             mimeTypes.put("apk", "application/vnd.android.package-archive");
             mimeTypes.put("zip", "application/zip");
         }

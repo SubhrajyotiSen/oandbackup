@@ -12,13 +12,14 @@ import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+
 import dk.jens.backup.ui.FileBrowser;
 
 public class FileBrowserEditTextPreference extends DialogPreference
 {
-    Button button;
-    EditText mEditText;
-    String mText;
+    private Button button;
+    private EditText mEditText;
+    private String mText;
     public FileBrowserEditTextPreference(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
@@ -37,15 +38,17 @@ public class FileBrowserEditTextPreference extends DialogPreference
     {
         return mText;
     }
-    public EditText getEditText()
-    {
-        return mEditText;
-    }
+
     public void setText(String text)
     {
         mText = text;
         persistString(text);
     }
+
+    EditText getEditText() {
+        return mEditText;
+    }
+
     @Override
     protected void onSetInitialValue(boolean restoreValue, Object defaultValue)
     {
@@ -107,56 +110,49 @@ public class FileBrowserEditTextPreference extends DialogPreference
         super.onRestoreInstanceState(savedState.getSuperState());
         mEditText.setText(savedState.text);
     }
-    protected void onAddViewsToDialogView(View dialogView, EditText editText, Button button)
+
+    private void onAddViewsToDialogView(View dialogView, EditText editText, Button button)
     {
-        ViewGroup container = (ViewGroup) dialogView.findViewById(R.id.viewContainer);
+        ViewGroup container = dialogView.findViewById(R.id.viewContainer);
         if(container != null)
         {
             container.addView(editText, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.8f));
             container.addView(button, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.2f));
         }
     }
-    private class OnClick implements View.OnClickListener
-    {
-        @Override
-        public void onClick(View v)
-        {
-            getContext().startActivity(new Intent(getContext(), FileBrowser.class));
-        }
-    }
-    private static class SavedState extends BaseSavedState
-    {
+
+    private static class SavedState extends BaseSavedState {
+        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
         String text;
 
-        public SavedState(Parcelable superState)
-        {
+        SavedState(Parcelable superState) {
             super(superState);
         }
 
-        public SavedState(Parcel source)
-        {
+        SavedState(Parcel source) {
             super(source);
             text = source.readString();
         }
 
         @Override
-        public void writeToParcel(Parcel dest, int flags)
-        {
+        public void writeToParcel(Parcel dest, int flags) {
             super.writeToParcel(dest, flags);
             dest.writeString(text);
         }
+    }
 
-        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>()
-        {
-            public SavedState createFromParcel(Parcel in)
-            {
-                return new SavedState(in);
-            }
-
-            public SavedState[] newArray(int size)
-            {
-                return new SavedState[size];
-            }
-        };
+    private class OnClick implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            getContext().startActivity(new Intent(getContext(), FileBrowser.class));
+        }
     }
 }

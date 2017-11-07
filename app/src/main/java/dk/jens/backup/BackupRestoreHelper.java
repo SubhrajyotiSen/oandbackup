@@ -9,13 +9,9 @@ public class BackupRestoreHelper
 {
     final static String TAG = OAndBackup.TAG;
 
-    public enum ActionType {
-        BACKUP, RESTORE
-    }
-
     public static int backup(Context context, File backupDir, AppInfo appInfo, ShellCommands shellCommands, int backupMode)
     {
-        int ret = 0;
+        int ret;
         File backupSubDir = new File(backupDir, appInfo.getPackageName());
         if(!backupSubDir.exists())
             backupSubDir.mkdirs();
@@ -49,6 +45,7 @@ public class BackupRestoreHelper
         LogFile.writeLogFile(backupSubDir, appInfo, backupMode);
         return ret;
     }
+
     public static int restore(Context context, File backupDir, AppInfo appInfo, ShellCommands shellCommands, int mode, Crypto crypto)
     {
         int apkRet, restoreRet, permRet, cryptoRet;
@@ -65,10 +62,10 @@ public class BackupRestoreHelper
             {
                 if(appInfo.isSystem()) {
                     apkRet = shellCommands.restoreSystemApk(backupSubDir,
-                        appInfo.getLabel(), apk);
+                            appInfo.getLabel(), apk);
                 } else {
                     apkRet = shellCommands.restoreUserApk(backupSubDir,
-                        appInfo.getLabel(), apk, context.getApplicationInfo().dataDir);
+                            appInfo.getLabel(), apk, context.getApplicationInfo().dataDir);
                 }
                 if(appInfo.isSystem() && appInfo.getLogInfo() != null)
                 {
@@ -115,6 +112,10 @@ public class BackupRestoreHelper
         int ret = apkRet + restoreRet + permRet + cryptoRet;
         shellCommands.logReturnMessage(context, ret);
         return ret;
+    }
+
+    public enum ActionType {
+        BACKUP, RESTORE
     }
     public interface OnBackupRestoreListener
     {

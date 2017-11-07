@@ -9,10 +9,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
-public class CommandHandler {
-    public static int runCmd(String shell, List<String> commands,
-            OutputConsumer outHandler, OutputConsumer errorHandler,
-            ExceptionConsumer exceptionHandler, UnexpectedExceptionListener exceptionListener) {
+class CommandHandler {
+    static int runCmd(String shell, List<String> commands,
+                      OutputConsumer outHandler, OutputConsumer errorHandler,
+                      ExceptionConsumer exceptionHandler, UnexpectedExceptionListener exceptionListener) {
         if(commands.size() == 0) {
             Log.w(OAndBackup.TAG, "no commands to run");
             errorHandler.accept("no commands to run");
@@ -27,9 +27,9 @@ public class CommandHandler {
             dos.writeBytes("exit\n");
             dos.flush();
             OutputHandler stdoutHandler = new OutputHandler(p.getInputStream(),
-                outHandler, exceptionListener);
+                    outHandler, exceptionListener);
             OutputHandler stderrHandler = new OutputHandler(p.getErrorStream(),
-                errorHandler, exceptionListener);
+                    errorHandler, exceptionListener);
             stdoutHandler.start();
             stderrHandler.start();
             return p.waitFor();
@@ -57,7 +57,7 @@ public class CommandHandler {
         private UnexpectedExceptionListener exceptionListener;
 
         private OutputHandler(InputStream is, OutputConsumer errorHandler,
-                UnexpectedExceptionListener exceptionListener) {
+                              UnexpectedExceptionListener exceptionListener) {
             this.is = is;
             this.errorHandler = errorHandler;
             this.exceptionListener = exceptionListener;

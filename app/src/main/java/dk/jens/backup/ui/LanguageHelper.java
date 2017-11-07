@@ -3,9 +3,10 @@ package dk.jens.backup.ui;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import dk.jens.backup.Constants;
 
 import java.util.Locale;
+
+import dk.jens.backup.Constants;
 
 public class LanguageHelper
 {
@@ -44,12 +45,5 @@ public class LanguageHelper
             return changeLanguage(context, Locale.getDefault().getLanguage());
         }
     }
-    public static void legacyKeepLanguage(Context context, String langCode)
-    {
-        // for some reason the locale changes back when PackageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES) is called on older apis (Process.waitFor() in shellCommands.checkSuperUser() does it too)
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
-        {
-            changeLanguage(context, langCode);
-        }
-    }
+
 }

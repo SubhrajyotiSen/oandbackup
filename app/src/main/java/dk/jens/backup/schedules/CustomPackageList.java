@@ -2,10 +2,11 @@ package dk.jens.backup.schedules;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+
+import java.util.ArrayList;
+
 import dk.jens.backup.AppInfo;
 import dk.jens.backup.Constants;
 import dk.jens.backup.FileCreationHelper;
@@ -13,24 +14,23 @@ import dk.jens.backup.FileReaderWriter;
 import dk.jens.backup.OAndBackup;
 import dk.jens.backup.R;
 
-import java.util.ArrayList;
-
-public class CustomPackageList
+class CustomPackageList
 {
-    static ArrayList<AppInfo> appInfoList = OAndBackup.appInfoList;
+    private static ArrayList<AppInfo> appInfoList = OAndBackup.appInfoList;
     // for use with schedules
-    public static void showList(Activity activity, int number)
+    static void showList(Activity activity, int number)
     {
         showList(activity, Scheduler.SCHEDULECUSTOMLIST + number);
     }
-    public static void showList(Activity activity, String filename)
+
+    private static void showList(Activity activity, String filename)
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
         final FileReaderWriter frw = new FileReaderWriter(prefs.getString(
-            Constants.PREFS_PATH_BACKUP_DIRECTORY, FileCreationHelper
-            .getDefaultBackupDirPath()), filename);
+                Constants.PREFS_PATH_BACKUP_DIRECTORY, FileCreationHelper
+                        .getDefaultBackupDirPath()), filename);
         final CharSequence[] items = collectItems();
-        final ArrayList<Integer> selected = new ArrayList<Integer>();
+        final ArrayList<Integer> selected = new ArrayList<>();
         boolean[] checked = new boolean[items.length];
         for(int i = 0; i < items.length; i++)
         {
@@ -41,11 +41,8 @@ public class CustomPackageList
             }
         }
         new AlertDialog.Builder(activity)
-            .setTitle(R.string.customListTitle)
-            .setMultiChoiceItems(items, checked, new DialogInterface.OnMultiChoiceClickListener()
-            {
-                public void onClick(DialogInterface dialog, int id, boolean isChecked)
-                {
+                .setTitle(R.string.customListTitle)
+                .setMultiChoiceItems(items, checked, (dialog, id, isChecked) -> {
                     if(isChecked)
                     {
                         selected.add(id);
@@ -54,22 +51,15 @@ public class CustomPackageList
                     {
                         selected.remove((Integer) id); // cast as Integer to distinguish between remove(Object) and remove(index)
                     }
-                }
-            })
-            .setPositiveButton(R.string.dialogOK, new DialogInterface.OnClickListener()
-            {
-                public void onClick(DialogInterface dialog, int id)
-                {
-                    handleSelectedItems(frw, items, selected);
-                }
-            })
-            .setNegativeButton(R.string.dialogCancel, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id){}})
-            .show();
+                })
+                .setPositiveButton(R.string.dialogOK, (dialog, id) -> handleSelectedItems(frw, items, selected))
+                .setNegativeButton(R.string.dialogCancel, (dialog, id) -> {
+                })
+                .show();
     }
     private static CharSequence[] collectItems()
     {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         for(AppInfo appInfo : appInfoList)
         {
             list.add(appInfo.getPackageName());

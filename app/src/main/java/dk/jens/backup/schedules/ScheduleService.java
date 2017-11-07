@@ -1,24 +1,27 @@
 package dk.jens.backup.schedules;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
+
 import dk.jens.backup.BackupRestoreHelper;
 import dk.jens.backup.Constants;
 import dk.jens.backup.OAndBackup;
 import dk.jens.backup.R;
 
 public class ScheduleService extends Service
-implements BackupRestoreHelper.OnBackupRestoreListener
+        implements BackupRestoreHelper.OnBackupRestoreListener
 {
     static final String TAG = OAndBackup.TAG;
     static final int ID = 2;
+
+    @SuppressLint("ApplySharedPref")
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId)
-    {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         int id = intent.getIntExtra("dk.jens.backup.schedule_id", -1);
         if(id >= 0) {
             SharedPreferences prefs;
@@ -29,8 +32,8 @@ implements BackupRestoreHelper.OnBackupRestoreListener
             prefs = getSharedPreferences(Constants.PREFS_SCHEDULES, 0);
             edit = prefs.edit();
             long timeUntilNextEvent = handleAlarms.timeUntilNextEvent(
-                prefs.getInt(Constants.PREFS_SCHEDULES_REPEATTIME + id, 0),
-                prefs.getInt(Constants.PREFS_SCHEDULES_HOUROFDAY + id, 0));
+                    prefs.getInt(Constants.PREFS_SCHEDULES_REPEATTIME + id, 0),
+                    prefs.getInt(Constants.PREFS_SCHEDULES_HOUROFDAY + id, 0));
             edit.putLong(Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT + id, timeUntilNextEvent);
             edit.putLong(Constants.PREFS_SCHEDULES_TIMEPLACED + id, System.currentTimeMillis());
             edit.commit();
@@ -38,9 +41,9 @@ implements BackupRestoreHelper.OnBackupRestoreListener
             int mode = prefs.getInt(Constants.PREFS_SCHEDULES_MODE + id, 1);
             int subMode = prefs.getInt(Constants.PREFS_SCHEDULES_SUBMODE + id, 2);
             boolean excludeSystem = prefs.getBoolean(
-                Constants.PREFS_SCHEDULES_EXCLUDESYSTEM + id, false);
+                    Constants.PREFS_SCHEDULES_EXCLUDESYSTEM + id, false);
             handleScheduledBackups.initiateBackup(id, mode, subMode + 1,
-                excludeSystem); // add one to submode to have it correspond to AppInfo.MODE_*
+                    excludeSystem); // add one to submode to have it correspond to AppInfo.MODE_*
         } else {
             Log.e(TAG, "got id: " + id + " from " + intent.toString());
         }

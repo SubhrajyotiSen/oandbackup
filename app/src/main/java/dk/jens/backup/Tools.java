@@ -2,47 +2,46 @@ package dk.jens.backup;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import java.io.File;
+import java.util.ArrayList;
+
 import dk.jens.backup.adapters.ToolsAdapter;
 import dk.jens.backup.ui.HandleMessages;
 import dk.jens.backup.ui.LanguageHelper;
 import dk.jens.backup.ui.NotificationHelper;
 
-import java.io.File;
-import java.util.ArrayList;
-
 public class Tools extends ListActivity
 {
+    final static String TAG = OAndBackup.TAG;
+    final static int RESULT_OK = 0;
     ArrayList<AppInfo> appInfoList = OAndBackup.appInfoList;
-    final static String TAG = OAndBackup.TAG; 
     File backupDir;
     ShellCommands shellCommands;
     HandleMessages handleMessages;
-    final static int RESULT_OK = 0;
-    
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.toolslayout);
-        if(android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN)
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN && getActionBar() != null)
         {
             getActionBar().setDisplayHomeAsUpEnabled(true);
         }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String langCode = prefs.getString(Constants.PREFS_LANGUAGES,
-            Constants.PREFS_LANGUAGES_DEFAULT);
+                Constants.PREFS_LANGUAGES_DEFAULT);
         LanguageHelper.initLanguage(this, langCode);
-        
+
         handleMessages = new HandleMessages(this);
 
         Bundle extra = getIntent().getExtras();
@@ -53,10 +52,10 @@ public class Tools extends ListActivity
         // get users to prevent an unnecessary call to su
         ArrayList<String> users = getIntent().getStringArrayListExtra("dk.jens.backup.users");
         shellCommands = new ShellCommands(PreferenceManager.getDefaultSharedPreferences(this), users);
-                
+
         String[] titles = getResources().getStringArray(R.array.tools_titles);
         String[] descriptions = getResources().getStringArray(R.array.tools_descriptions);
-        ArrayList<Pair> items = new ArrayList<Pair>();
+        ArrayList<Pair> items = new ArrayList<>();
         for(int i = 0; i < titles.length; i++)
         {
             Pair pair = new Pair(titles[i], descriptions[i]);
@@ -83,38 +82,27 @@ public class Tools extends ListActivity
                 quickReboot();
                 break;
             case 1:
-                final ArrayList<AppInfo> deleteList = new ArrayList<AppInfo>();
-                String message = "";
+                final ArrayList<AppInfo> deleteList = new ArrayList<>();
+                StringBuilder message = new StringBuilder();
                 for(AppInfo appInfo : appInfoList)
                 {
                     if(!appInfo.isInstalled())
                     {
                         deleteList.add(appInfo);
-                        message += appInfo.getLabel() + "\n";
+                        message.append(appInfo.getLabel()).append("\n");
                     }
                 }
                 if(!deleteList.isEmpty())
                 {
                     new AlertDialog.Builder(this)
-                    .setTitle(R.string.tools_batchDeleteTitle)
-                    .setMessage(message.trim())
-                    .setPositiveButton(R.string.dialogYes, new DialogInterface.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which)
-                        {
-                            changesMade();
-                            new Thread(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    deleteBackups(deleteList);
-                                }
-                            }).start();
-                        }
-                    })
-                    .setNegativeButton(R.string.dialogNo, null)
-                    .show();
+                            .setTitle(R.string.tools_batchDeleteTitle)
+                            .setMessage(message.toString().trim())
+                            .setPositiveButton(R.string.dialogYes, (dialog, which) -> {
+                                changesMade();
+                                new Thread(() -> deleteBackups(deleteList)).start();
+                            })
+                            .setNegativeButton(R.string.dialogNo, null)
+                            .show();
                 }
                 else
                 {
@@ -132,7 +120,7 @@ public class Tools extends ListActivity
         Intent result = new Intent();
         result.putExtra("changesMade", true);
         setResult(RESULT_OK, result);
-    }    
+    }
     public void deleteBackups(ArrayList<AppInfo> deleteList)
     {
         handleMessages.showMessage(getString(R.string.tools_batchDeleteMessage), "");
@@ -156,23 +144,17 @@ public class Tools extends ListActivity
     public void quickReboot()
     {
         new AlertDialog.Builder(this)
-        .setTitle(R.string.quickReboot)
-        .setMessage(R.string.quickRebootMessage)
-        .setPositiveButton(R.string.dialogYes, new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-                shellCommands.quickReboot();
-            }
-        })
-        .setNegativeButton(R.string.dialogNo, null)
-        .show();
+                .setTitle(R.string.quickReboot)
+                .setMessage(R.string.quickRebootMessage)
+                .setPositiveButton(R.string.dialogYes, (dialog, which) -> shellCommands.quickReboot())
+                .setNegativeButton(R.string.dialogNo, null)
+                .show();
     }
     public static class Pair
     {
         public final String title, description;
-        public Pair(String title, String description)
+
+        Pair(String title, String description)
         {
             this.title = title;
             this.description = description;

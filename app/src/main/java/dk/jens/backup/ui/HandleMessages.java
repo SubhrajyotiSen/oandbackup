@@ -6,30 +6,30 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import dk.jens.backup.OAndBackup;
 
 import java.lang.ref.WeakReference;
+
+import dk.jens.backup.OAndBackup;
 
 public class HandleMessages
 {
     final static String TAG = OAndBackup.TAG;
     final static int SHOW_DIALOG = 0;
     final static int DISMISS_DIALOG = 1;
-
-    private final ProgressHandler handler;
     private static WeakReference<Context> mContext;
+    private final ProgressHandler handler;
 
     public HandleMessages(Context context)
     {
-        /**
-            * use weakreference to avoid another memory leak
-            * http://www.androiddesignpatterns.com/2013/01/inner-class-handler-memory-leak.html
-        */
-        mContext = new WeakReference<Context>(context);
-        /**
-            * the handler is bound to the looper of the thread were it was created
-            * it is therefore important to initialize this class on the main thread
-        */
+        /*
+         * use weakreference to avoid another memory leak
+         * http://www.androiddesignpatterns.com/2013/01/inner-class-handler-memory-leak.html
+         */
+        mContext = new WeakReference<>(context);
+        /*
+         * the handler is bound to the looper of the thread were it was created
+         * it is therefore important to initialize this class on the main thread
+         */
         handler = new ProgressHandler();
     }
     public void setMessage(String title, String msg)
@@ -64,9 +64,9 @@ public class HandleMessages
         handler.sendMessage(endMessage);
     }
     /**
-        * handlers should be static to avoid memory leaks
-        * https://groups.google.com/forum/#!msg/android-developers/1aPZXZG6kWk/lIYDavGYn5UJ
-    */
+     * handlers should be static to avoid memory leaks
+     * https://groups.google.com/forum/#!msg/android-developers/1aPZXZG6kWk/lIYDavGYn5UJ
+     */
     private static class ProgressHandler extends Handler
     {
         private static ProgressDialog progress = null;
@@ -80,12 +80,12 @@ public class HandleMessages
             {
                 case SHOW_DIALOG:
                     Context context;
-                    /**
-                        * change the current running progressdialog if it exists
-                        * to avoid losing the reference
-                        * TODO: allow more than one progressdialog at a time
-                        * this could be handled with asynctask but that is discouraged for long operations
-                    */
+                    /*
+                     * change the current running progressdialog if it exists
+                     * to avoid losing the reference
+                     * TODO: allow more than one progressdialog at a time
+                     * this could be handled with asynctask but that is discouraged for long operations
+                     */
                     if(progress != null && progress.isShowing())
                     {
                         progress.setTitle(title);
@@ -121,11 +121,9 @@ public class HandleMessages
                     break;
             }
         }
-        public boolean isShowing()
-        {
-            if(progress != null)
-                return progress.isShowing();
-            return false;
+
+        boolean isShowing() {
+            return progress != null && progress.isShowing();
         }
         public String getTitle()
         {
@@ -133,11 +131,12 @@ public class HandleMessages
                 return title;
             return "";
         }
-        public String getMessage()
+
+        String getMessage()
         {
             if(msg != null)
                 return msg;
             return "";
         }
-    };
+    }
 }

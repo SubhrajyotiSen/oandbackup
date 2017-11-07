@@ -1,34 +1,35 @@
 package dk.jens.backup;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MenuItem;
 
-import dk.jens.backup.ui.LanguageHelper;
 import org.openintents.openpgp.util.OpenPgpApi;
 
-public class BaseActivity extends Activity
+import dk.jens.backup.ui.LanguageHelper;
+
+@SuppressLint("Registered")
+public class BaseActivity extends AppCompatActivity
 {
-    final static String TAG = "oandbackup";
     public static final int OPENPGP_REQUEST_ENCRYPT = 3;
     public static final int OPENPGP_REQUEST_DECRYPT = 4;
     public static final int OPENPGP_REQUEST_TESTRESPONSE = 5;
+    final static String TAG = "oandbackup";
     Crypto crypto;
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        if(android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN && getParentActivityIntent() != null)
-        {
-            getActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String langCode = prefs.getString(Constants.PREFS_LANGUAGES,
-            Constants.PREFS_LANGUAGES_DEFAULT);
+                Constants.PREFS_LANGUAGES_DEFAULT);
         LanguageHelper.initLanguage(this, langCode);
         if(prefs.getBoolean(Constants.PREFS_ENABLECRYPTO, false))
             startCrypto();
@@ -69,13 +70,9 @@ public class BaseActivity extends Activity
     }
     public void startCrypto()
     {
-        new Thread(new Runnable()
-        {
-            public void run()
-            {
-                crypto = new Crypto(PreferenceManager.getDefaultSharedPreferences(BaseActivity.this));
-                crypto.bind(BaseActivity.this);
-            }
+        new Thread(() -> {
+            crypto = new Crypto(PreferenceManager.getDefaultSharedPreferences(BaseActivity.this));
+            crypto.bind(BaseActivity.this);
         }).start();
     }
     public Crypto getCrypto()

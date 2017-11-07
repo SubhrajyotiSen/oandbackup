@@ -3,36 +3,31 @@ package dk.jens.backup;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.TaskStackBuilder;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.widget.Toast;
-import dk.jens.backup.ui.HandleMessages;
 
 import java.io.File;
 
+import dk.jens.backup.ui.HandleMessages;
+
 public class Utils
 {
-    public static void showErrors(final Activity activity)
+    static void showErrors(final Activity activity)
     {
-        activity.runOnUiThread(new Runnable()
-        {
-            public void run()
-            {
-                String errors = ShellCommands.getErrors();
-                if(errors.length() > 0)
-                {
-                    new AlertDialog.Builder(activity)
-                    .setTitle(R.string.errorDialogTitle)
-                    .setMessage(errors)
-                    .setPositiveButton(R.string.dialogOK, null)
-                    .show();
-                    ShellCommands.clearErrors();
-                }
+        activity.runOnUiThread(() -> {
+            String errors = ShellCommands.getErrors();
+            if (errors.length() > 0) {
+                new AlertDialog.Builder(activity)
+                        .setTitle(R.string.errorDialogTitle)
+                        .setMessage(errors)
+                        .setPositiveButton(R.string.dialogOK, null)
+                        .show();
+                ShellCommands.clearErrors();
             }
         });
     }
-    public static File createBackupDir(final Activity activity, final String path)
+
+    static File createBackupDir(final Activity activity, final String path)
     {
         FileCreationHelper fileCreator = new FileCreationHelper();
         File backupDir;
@@ -41,13 +36,7 @@ public class Utils
             backupDir = fileCreator.createBackupFolder(path);
             if(fileCreator.isFallenBack())
             {
-                activity.runOnUiThread(new Runnable()
-                {
-                    public void run()
-                    {
-                        Toast.makeText(activity, activity.getString(R.string.mkfileError) + " " + path + " - " + activity.getString(R.string.fallbackToDefault) + ": " + FileCreationHelper.getDefaultBackupDirPath(), Toast.LENGTH_LONG).show();
-                    }
-                });
+                activity.runOnUiThread(() -> Toast.makeText(activity, activity.getString(R.string.mkfileError) + " " + path + " - " + activity.getString(R.string.fallbackToDefault) + ": " + FileCreationHelper.getDefaultBackupDirPath(), Toast.LENGTH_LONG).show());
             }
         }
         else
@@ -60,47 +49,41 @@ public class Utils
         }
         return backupDir;
     }
-    public static void showWarning(final Activity activity, final String title, final String message)
+
+    static void showWarning(final Activity activity, final String title, final String message)
     {
-        activity.runOnUiThread(new Runnable()
-        {
-            public void run()
-            {
-                new AlertDialog.Builder(activity)
-                    .setTitle(title)
-                    .setMessage(message)
-                    .setNeutralButton(R.string.dialogOK, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id){}})
-                    .setCancelable(false)
-                    .show();
-            }
-        });
+        activity.runOnUiThread(() -> new AlertDialog.Builder(activity)
+                .setTitle(title)
+                .setMessage(message)
+                .setNeutralButton(R.string.dialogOK, (dialog, id) -> {
+                })
+                .setCancelable(false)
+                .show());
     }
-    public static void showConfirmDialog(Activity activity, String title, String message, final Command confirmCommand)
+
+    public static void showConfirmDialog(Activity activity, String message, final Command confirmCommand)
     {
         new AlertDialog.Builder(activity)
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton(R.string.dialogOK, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    confirmCommand.execute();
-                }
-            })
-            .setNegativeButton(R.string.dialogCancel, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id){}})
-            .show();
+                .setTitle("")
+                .setMessage(message)
+                .setPositiveButton(R.string.dialogOK, (dialog, id) -> confirmCommand.execute())
+                .setNegativeButton(R.string.dialogCancel, (dialog, id) -> {
+                })
+                .show();
     }
-    public static void reloadWithParentStack(Activity activity)
+
+    static void reloadWithParentStack(Activity activity)
     {
         Intent intent = activity.getIntent();
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         activity.finish();
         activity.overridePendingTransition(0, 0);
         TaskStackBuilder.create(activity)
-            .addNextIntentWithParentStack(intent)
-            .startActivities();
+                .addNextIntentWithParentStack(intent)
+                .startActivities();
     }
-    public static void reShowMessage(HandleMessages handleMessages, long tid)
+
+    static void reShowMessage(HandleMessages handleMessages, long tid)
     {
         // since messages are progressdialogs and not dialogfragments they need to be set again manually
         if(tid != -1)
@@ -108,7 +91,8 @@ public class Utils
                 if(t.getId() == tid && t.isAlive())
                     handleMessages.reShowMessage();
     }
-    public static String getName(String path)
+
+    static String getName(String path)
     {
         if(path.endsWith(File.separator))
             path = path.substring(0, path.length() - 1);
@@ -116,6 +100,6 @@ public class Utils
     }
     public interface Command
     {
-        public void execute();
+        void execute();
     }
 }

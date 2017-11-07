@@ -1,12 +1,9 @@
 package dk.jens.backup;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.Context;
 import android.os.Bundle;
-import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -15,32 +12,25 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RadioButton;
+
+import java.io.File;
+import java.util.ArrayList;
+
 import dk.jens.backup.adapters.BatchAdapter;
 import dk.jens.backup.ui.HandleMessages;
 import dk.jens.backup.ui.NotificationHelper;
 import dk.jens.backup.ui.dialogs.BatchConfirmDialog;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 public class BatchActivity extends BaseActivity
-implements OnClickListener, BatchConfirmDialog.ConfirmListener
+        implements OnClickListener, BatchConfirmDialog.ConfirmListener
 {
-    ArrayList<AppInfo> appInfoList = OAndBackup.appInfoList;
     final static String TAG = OAndBackup.TAG;
-    boolean backupBoolean;
-    final static int SHOW_DIALOG = 0;
-    final static int CHANGE_DIALOG = 1;
-    final static int DISMISS_DIALOG = 2;
-
     final static int RESULT_OK = 0;
-
+    ArrayList<AppInfo> appInfoList = OAndBackup.appInfoList;
+    boolean backupBoolean;
     boolean checkboxSelectAllBoolean = false;
     boolean changesMade;
 
@@ -76,8 +66,8 @@ implements OnClickListener, BatchConfirmDialog.ConfirmListener
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String backupDirPath = prefs.getString(
-            Constants.PREFS_PATH_BACKUP_DIRECTORY,
-            FileCreationHelper.getDefaultBackupDirPath());
+                Constants.PREFS_PATH_BACKUP_DIRECTORY,
+                FileCreationHelper.getDefaultBackupDirPath());
         backupDir = Utils.createBackupDir(BatchActivity.this, backupDirPath);
 
         int filteringMethodId = 0;
@@ -92,18 +82,18 @@ implements OnClickListener, BatchConfirmDialog.ConfirmListener
         ArrayList<String> users = getIntent().getStringArrayListExtra("dk.jens.backup.users");
         shellCommands = new ShellCommands(prefs, users);
 
-        Button bt = (Button) findViewById(R.id.backupRestoreButton);
+        Button bt = findViewById(R.id.backupRestoreButton);
         bt.setOnClickListener(this);
-        rbApk = (RadioButton) findViewById(R.id.radioApk);
-        rbData = (RadioButton) findViewById(R.id.radioData);
-        rbBoth = (RadioButton) findViewById(R.id.radioBoth);
+        rbApk = findViewById(R.id.radioApk);
+        rbData = findViewById(R.id.radioData);
+        rbBoth = findViewById(R.id.radioBoth);
         rbBoth.setChecked(true);
 
         if(appInfoList == null)
             appInfoList = AppInfoHelper.getPackageInfo(this, backupDir, true);
         if(backupBoolean)
         {
-            list = new ArrayList<AppInfo>();
+            list = new ArrayList<>();
             for(AppInfo appInfo : appInfoList)
                 if(appInfo.isInstalled())
                     list.add(appInfo);
@@ -112,26 +102,22 @@ implements OnClickListener, BatchConfirmDialog.ConfirmListener
         }
         else
         {
-            list = new ArrayList<AppInfo>(appInfoList);
+            list = new ArrayList<>(appInfoList);
             bt.setText(R.string.restore);
         }
 
-        ListView listView = (ListView) findViewById(R.id.listview);
+        ListView listView = findViewById(R.id.listview);
         adapter = new BatchAdapter(this, R.layout.batchlistlayout, list);
         sorter = new Sorter(adapter, prefs);
         sorter.sort(filteringMethodId);
         sorter.sort(sortingMethodId);
         listView.setAdapter(adapter);
         // onItemClickListener gør at hele viewet kan klikkes - med onCheckedListener er det kun checkboxen der kan klikkes
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View v, int pos, long id)
-            {
-                AppInfo appInfo = adapter.getItem(pos);
-                appInfo.setChecked(!appInfo.isChecked());
-                adapter.notifyDataSetChanged();
-            }
+        listView.setOnItemClickListener((parent, v, pos, id) -> {
+            AppInfo appInfo = adapter.getItem(pos);
+            assert appInfo != null;
+            appInfo.setChecked(!appInfo.isChecked());
+            adapter.notifyDataSetChanged();
         });
     }
     @Override
@@ -158,7 +144,7 @@ implements OnClickListener, BatchConfirmDialog.ConfirmListener
     @Override
     public void onClick(View v)
     {
-        ArrayList<AppInfo> selectedList = new ArrayList<AppInfo>();
+        ArrayList<AppInfo> selectedList = new ArrayList<>();
         for(AppInfo appInfo : list)
         {
             if(appInfo.isChecked())
@@ -205,12 +191,12 @@ implements OnClickListener, BatchConfirmDialog.ConfirmListener
         {
             case android.R.id.home:
                 setResult(RESULT_OK, constructResultIntent());
-                /**
-                    * since finish() is not called when navigating up via
-                    * the actionbar it needs to be set here.
-                    * break instead of return true to let it continue to
-                    * the call to baseactivity where navigation is handled.
-                */
+                /*
+                 * since finish() is not called when navigating up via
+                 * the actionbar it needs to be set here.
+                 * break instead of return true to let it continue to
+                 * the call to baseactivity where navigation is handled.
+                 */
                 break;
             case R.id.de_selectAll:
                 if(checkboxSelectAllBoolean)
@@ -225,10 +211,12 @@ implements OnClickListener, BatchConfirmDialog.ConfirmListener
                     // only check the shown items
                     for(int i = 0; i < adapter.getCount(); i++)
                     {
-                        adapter.getItem(i).setChecked(true);
+                        AppInfo appInfo = adapter.getItem(i);
+                        assert appInfo != null;
+                        appInfo.setChecked(true);
                     }
                 }
-                checkboxSelectAllBoolean = checkboxSelectAllBoolean ? false : true;
+                checkboxSelectAllBoolean = !checkboxSelectAllBoolean;
                 adapter.notifyDataSetChanged();
                 return true;
             default:
@@ -249,14 +237,8 @@ implements OnClickListener, BatchConfirmDialog.ConfirmListener
     @Override
     public void onConfirmed(ArrayList<AppInfo> selectedList)
     {
-        final ArrayList<AppInfo> list = new ArrayList<AppInfo>(selectedList);
-        Thread thread = new Thread(new Runnable()
-        {
-            public void run()
-            {
-                doAction(list);
-            }
-        });
+        final ArrayList<AppInfo> list = new ArrayList<>(selectedList);
+        Thread thread = new Thread(() -> doAction(list));
         thread.start();
         threadId = thread.getId();
     }
@@ -272,7 +254,7 @@ implements OnClickListener, BatchConfirmDialog.ConfirmListener
             PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
             if(prefs.getBoolean("acquireWakelock", true))
             {
-                wl.acquire();
+                wl.acquire(30 * 60 * 1000L /*30 minutes*/);
                 Log.i(TAG, "wakelock acquired");
             }
             changesMade = true;

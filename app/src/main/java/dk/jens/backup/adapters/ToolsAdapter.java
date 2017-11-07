@@ -1,21 +1,24 @@
 package dk.jens.backup.adapters;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import dk.jens.backup.R;
-import dk.jens.backup.Tools;
 
 import java.util.ArrayList;
 
+import dk.jens.backup.R;
+import dk.jens.backup.Tools;
+
 public class ToolsAdapter extends ArrayAdapter
 {
-    Context context;
-    int layout;
-    ArrayList<Tools.Pair> items;
+    private Context context;
+    private int layout;
+    private ArrayList<Tools.Pair> items;
+
     public ToolsAdapter(Context context, int layout, ArrayList<Tools.Pair> items)
     {
         super(context, layout, items);
@@ -23,26 +26,24 @@ public class ToolsAdapter extends ArrayAdapter
         this.layout = layout;
         this.items = items;
     }
+
+    @NonNull
     @Override
-    public View getView(int pos, View convertView, ViewGroup parent)
-    {
+    public View getView(int pos, View convertView, @NonNull ViewGroup parent) {
         ViewHolder viewHolder;
-        if(convertView == null)
-        {
+        if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            assert inflater != null;
             convertView = inflater.inflate(layout, parent, false);
             viewHolder = new ViewHolder();
-            viewHolder.title = (TextView) convertView.findViewById(R.id.tools_title);
-            viewHolder.description = (TextView) convertView.findViewById(R.id.tools_description);
+            viewHolder.title = convertView.findViewById(R.id.tools_title);
+            viewHolder.description = convertView.findViewById(R.id.tools_description);
             convertView.setTag(viewHolder);
-        }
-        else
-        {
+        } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         Tools.Pair pair = (Tools.Pair) getItem(pos);
-        if(pair != null)
-        {
+        if (pair != null) {
             viewHolder.title.setText(pair.title);
             viewHolder.description.setText(pair.description);
         }

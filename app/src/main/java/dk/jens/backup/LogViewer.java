@@ -8,7 +8,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class LogViewer extends BaseActivity
-implements View.OnClickListener
+        implements View.OnClickListener
 {
     final static String TAG = OAndBackup.TAG;
     String[] textParts;
@@ -18,7 +18,7 @@ implements View.OnClickListener
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.logviewer);
-        Button nextLinesButton = (Button) findViewById(R.id.next_lines_button);
+        Button nextLinesButton = findViewById(R.id.next_lines_button);
         nextLinesButton.setOnClickListener(this);
         new Thread(new TextLoadRunnable()).start();
     }
@@ -28,14 +28,14 @@ implements View.OnClickListener
     }
     private void appendNextLines(boolean clear)
     {
-        final ScrollView scroll = (ScrollView) findViewById(R.id.scrollview);
+        final ScrollView scroll = findViewById(R.id.scrollview);
         final int pos = scroll.getScrollY();
-        TextView tv = (TextView) findViewById(R.id.log_text);
+        TextView tv = findViewById(R.id.log_text);
         if(clear)
         {
-            ProgressBar pb = (ProgressBar) findViewById(R.id.logviewer_progressbar);
+            ProgressBar pb = findViewById(R.id.logviewer_progressbar);
             pb.setVisibility(View.GONE);
-            TextView loading = (TextView) findViewById(R.id.logviewer_loading_textview);
+            TextView loading = findViewById(R.id.logviewer_loading_textview);
             loading.setVisibility(View.GONE);
         }
         // loading a large text file can take a long time
@@ -45,26 +45,20 @@ implements View.OnClickListener
         index -= 20;
         if(index <= 0)
         {
-            Button btn = (Button) findViewById(R.id.next_lines_button);
+            Button btn = findViewById(R.id.next_lines_button);
             btn.setClickable(false);
         }
         // scroll action needs to be delayed until text is displayed on screen
         // FIXME: find a less hacky solution
-        scroll.postDelayed(new Runnable()
-        {
-            public void run()
-            {
-                scroll.scrollTo(0, pos);
-            }
-        }, 700);
+        scroll.postDelayed(() -> scroll.scrollTo(0, pos), 700);
     }
     @Override
     public void onClick(View v)
     {
         switch(v.getId())
         {
-        case R.id.next_lines_button:
-            appendNextLines();
+            case R.id.next_lines_button:
+                appendNextLines();
         }
     }
     private class TextLoadRunnable implements Runnable
@@ -74,13 +68,7 @@ implements View.OnClickListener
             String txt = new FileReaderWriter(FileCreationHelper.defaultLogFilePath).read();
             textParts = txt.split("\n");
             index = textParts.length - 1;
-            runOnUiThread(new Runnable()
-            {
-                public void run()
-                {
-                    appendNextLines(true);
-                }
-            });
+            runOnUiThread(() -> appendNextLines(true));
         }
     }
 }

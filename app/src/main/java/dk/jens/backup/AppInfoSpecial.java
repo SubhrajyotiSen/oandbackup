@@ -4,53 +4,55 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class AppInfoSpecial extends AppInfo
-implements Parcelable
+        implements Parcelable
 {
-    String[] files;
-    public AppInfoSpecial(String packageName, String label, String versionName, int versionCode)
+    public static final Parcelable.Creator<AppInfoSpecial> CREATOR = new Parcelable.Creator<AppInfoSpecial>() {
+        public AppInfoSpecial createFromParcel(Parcel in) {
+            return new AppInfoSpecial(in);
+        }
+
+        public AppInfoSpecial[] newArray(int size) {
+            return new AppInfoSpecial[size];
+        }
+    };
+    private String[] files;
+
+    AppInfoSpecial(String packageName, String label, String versionName, int versionCode)
     {
         super(packageName, label, versionName, versionCode, "", "", true, true);
     }
+
+    private AppInfoSpecial(Parcel in) {
+        super(in);
+        files = in.createStringArray();
+    }
+
     public String[] getFilesList()
     {
         return files;
     }
-    @Override
-    public boolean isSpecial()
-    {
-        return true;
+
+    void setFilesList(String file) {
+        files = new String[]{file};
     }
-    public void setFilesList(String file)
-    {
-        files = new String[] {file};
-    }
-    public void setFilesList(String... files)
-    {
+
+    void setFilesList(String... files) {
         this.files = files;
     }
+
+    @Override
+    public boolean isSpecial() {
+        return true;
+    }
+
     public int describeContents()
     {
         return 0;
     }
+
     public void writeToParcel(Parcel out, int flags)
     {
         super.writeToParcel(out, flags);
         out.writeStringArray(files);
-    }
-    public static final Parcelable.Creator<AppInfoSpecial> CREATOR = new Parcelable.Creator<AppInfoSpecial>()
-    {
-        public AppInfoSpecial createFromParcel(Parcel in)
-        {
-            return new AppInfoSpecial(in);
-        }
-        public AppInfoSpecial[] newArray(int size)
-        {
-            return new AppInfoSpecial[size];
-        }
-    };
-    protected AppInfoSpecial(Parcel in)
-    {
-        super(in);
-        files = in.createStringArray();
     }
 }

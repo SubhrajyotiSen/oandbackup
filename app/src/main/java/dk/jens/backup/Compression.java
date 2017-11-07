@@ -11,16 +11,17 @@ import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream; 
+import java.util.zip.ZipOutputStream;
 
 public class Compression
 {
     final static String TAG = OAndBackup.TAG;
-    public static int zip(File dir)
+
+    static int zip(File dir)
     {
         try
         {
-            ArrayList<String> fileList = new ArrayList<String>();
+            ArrayList<String> fileList = new ArrayList<>();
             byte[] buffer = new byte[1024];
             File zipDir = new File(dir.getAbsolutePath() + ".zip");
             String baseDir = dir.getAbsolutePath().substring(0, dir.getAbsolutePath().length() - dir.getName().length());
@@ -71,11 +72,13 @@ public class Compression
             return 1;
         }
     }
-    public static int unzip(File zipfile, File outputDir)
+
+    static int unzip(File zipfile, File outputDir)
     {
         return unzip(zipfile, outputDir, null);
     }
-    public static int unzip(File zipfile, File outputDir, ArrayList<String> files)
+
+    static int unzip(File zipfile, File outputDir, ArrayList<String> files)
     {
         try
         {
@@ -114,7 +117,7 @@ public class Compression
     {
         try
         {
-            ArrayList<String> filelist = new ArrayList<String>();
+            ArrayList<String> filelist = new ArrayList<>();
             FileInputStream in = new FileInputStream(zipfile);
             ZipInputStream zis = new ZipInputStream(in);
             ZipEntry entry;
@@ -126,7 +129,6 @@ public class Compression
                     if(name.contains(match))
                     {
                         filelist.add(name);
-                        continue;
                     }
                 }
             }

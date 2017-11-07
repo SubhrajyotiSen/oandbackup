@@ -1,5 +1,6 @@
 package dk.jens.backup.schedules;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,7 +8,6 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,6 +22,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+
 import dk.jens.backup.BaseActivity;
 import dk.jens.backup.BlacklistContract;
 import dk.jens.backup.BlacklistListener;
@@ -34,19 +37,15 @@ import dk.jens.backup.R;
 import dk.jens.backup.Utils;
 import dk.jens.backup.ui.dialogs.BlacklistDialogFragment;
 
-import java.util.ArrayList;
-
 public class Scheduler extends BaseActivity
-implements View.OnClickListener, AdapterView.OnItemSelectedListener,
-BlacklistListener
+        implements View.OnClickListener, AdapterView.OnItemSelectedListener,
+        BlacklistListener
 {
-    static final String TAG = OAndBackup.TAG;
     public static final String SCHEDULECUSTOMLIST = "customlist";
+    public static final int GLOBALBLACKLISTID = -1;
+    static final String TAG = OAndBackup.TAG;
     static final int CUSTOMLISTUPDATEBUTTONID = 1;
     static final int EXCLUDESYSTEMCHECKBOXID = 2;
-
-    public static final int GLOBALBLACKLISTID = -1;
-
     ArrayList<View> viewList;
     HandleAlarms handleAlarms;
 
@@ -58,9 +57,9 @@ BlacklistListener
 
     private BlacklistsDBHelper blacklistsDBHelper;
 
+    @SuppressLint("CommitPrefEdits")
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.schedulesframe);
 
@@ -72,14 +71,14 @@ BlacklistListener
 
         transferOldValues();
 
-        viewList = new ArrayList<View>();
+        viewList = new ArrayList<>();
         blacklistsDBHelper = new BlacklistsDBHelper(this);
     }
     @Override
     public void onResume()
     {
         super.onResume();
-        LinearLayout main = (LinearLayout) findViewById(R.id.linearLayout);
+        LinearLayout main = findViewById(R.id.linearLayout);
         totalSchedules = prefs.getInt(Constants.PREFS_SCHEDULES_TOTAL, 0);
         totalSchedules = totalSchedules < 0 ? 0 : totalSchedules; // set to zero so there is always at least one schedule on activity start
         for(View view : viewList)
@@ -88,7 +87,7 @@ BlacklistListener
             if(parent != null)
                 parent.removeView(view);
         }
-        viewList = new ArrayList<View>();
+        viewList = new ArrayList<>();
         for(int i = 0; i <= totalSchedules; i++)
         {
             View v = buildUi(i);
@@ -131,9 +130,9 @@ BlacklistListener
                     args.putInt(Constants.BLACKLIST_ARGS_ID, GLOBALBLACKLISTID);
                     SQLiteDatabase db = blacklistsDBHelper.getReadableDatabase();
                     ArrayList<String> blacklistedPackages = blacklistsDBHelper
-                        .getBlacklistedPackages(db, GLOBALBLACKLISTID);
+                            .getBlacklistedPackages(db, GLOBALBLACKLISTID);
                     args.putStringArrayList(Constants.BLACKLIST_ARGS_PACKAGES,
-                        blacklistedPackages);
+                            blacklistedPackages);
                     BlacklistDialogFragment blacklistDialogFragment = new BlacklistDialogFragment();
                     blacklistDialogFragment.setArguments(args);
                     blacklistDialogFragment.addBlacklistListener(this);
@@ -145,25 +144,25 @@ BlacklistListener
     }
     public View buildUi(int number)
     {
-        View view = LayoutInflater.from(this).inflate(R.layout.schedule, null);
-        LinearLayout ll = (LinearLayout) view.findViewById(R.id.ll);
+        @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.schedule, null);
+        LinearLayout ll = view.findViewById(R.id.ll);
 
-        Button updateButton = (Button) view.findViewById(R.id.updateButton);
+        Button updateButton = view.findViewById(R.id.updateButton);
         updateButton.setOnClickListener(this);
-        Button removeButton = (Button) view.findViewById(R.id.removeButton);
+        Button removeButton = view.findViewById(R.id.removeButton);
         removeButton.setOnClickListener(this);
-        Button activateButton = (Button) view.findViewById(R.id.activateButton);
+        Button activateButton = view.findViewById(R.id.activateButton);
         activateButton.setOnClickListener(this);
-        EditText intervalDays = (EditText) view.findViewById(R.id.intervalDays);
+        EditText intervalDays = view.findViewById(R.id.intervalDays);
         String repeatString = Integer.toString(prefs.getInt(Constants.PREFS_SCHEDULES_REPEATTIME + number, 0));
         intervalDays.setText(repeatString);
-        EditText timeOfDay = (EditText) view.findViewById(R.id.timeOfDay);
+        EditText timeOfDay = view.findViewById(R.id.timeOfDay);
         String timeOfDayString = Integer.toString(prefs.getInt(Constants.PREFS_SCHEDULES_HOUROFDAY + number, 0));
         timeOfDay.setText(timeOfDayString);
-        CheckBox cb = (CheckBox) view.findViewById(R.id.checkbox);
+        CheckBox cb = view.findViewById(R.id.checkbox);
         cb.setChecked(prefs.getBoolean(Constants.PREFS_SCHEDULES_ENABLED + number, false));
-        Spinner spinner = (Spinner) view.findViewById(R.id.sched_spinner);
-        Spinner spinnerSubModes = (Spinner) view.findViewById(R.id.sched_spinnerSubModes);
+        Spinner spinner = view.findViewById(R.id.sched_spinner);
+        Spinner spinnerSubModes = view.findViewById(R.id.sched_spinnerSubModes);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.scheduleModes, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
@@ -174,8 +173,8 @@ BlacklistListener
         spinnerSubModes.setAdapter(adapterSubModes);
         spinnerSubModes.setSelection(prefs.getInt(Constants.PREFS_SCHEDULES_SUBMODE + number, 2), false);
         spinnerSubModes.setOnItemSelectedListener(this);
-        
-        TextView timeLeftTextView = (TextView) view.findViewById(R.id.sched_timeLeft);
+
+        TextView timeLeftTextView = view.findViewById(R.id.sched_timeLeft);
 
         toggleSecondaryButtons(ll, spinner, number);
 
@@ -193,8 +192,8 @@ BlacklistListener
         int number = (Integer) v.getTag();
         boolean checked = ((CheckBox) v).isChecked();
         View view = viewList.get(number);
-        EditText intervalDays = (EditText) view.findViewById(R.id.intervalDays);
-        EditText timeOfDay = (EditText) view.findViewById(R.id.timeOfDay);
+        EditText intervalDays = view.findViewById(R.id.intervalDays);
+        EditText timeOfDay = view.findViewById(R.id.timeOfDay);
 
         if(checked)
         {
@@ -224,8 +223,8 @@ BlacklistListener
         try
         {
             View view = viewList.get(number);
-            EditText intervalDays = (EditText) view.findViewById(R.id.intervalDays);
-            EditText timeOfDay = (EditText) view.findViewById(R.id.timeOfDay);
+            EditText intervalDays = view.findViewById(R.id.intervalDays);
+            EditText timeOfDay = view.findViewById(R.id.timeOfDay);
 
             switch(v.getId())
             {
@@ -239,7 +238,7 @@ BlacklistListener
                     {
                         long startTime = handleAlarms.timeUntilNextEvent(repeatTime, hourOfDay, true);
                         edit.putLong(Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT + number, startTime);
-    //                    Log.i(TAG, number + ": starttime update: " + (startTime / 1000 / 60 / 60f));
+                        //                    Log.i(TAG, number + ": starttime update: " + (startTime / 1000 / 60 / 60f));
                         handleAlarms.setAlarm(number, startTime, repeatTime.longValue() * AlarmManager.INTERVAL_DAY);
                     }
                     edit.commit();
@@ -256,8 +255,8 @@ BlacklistListener
                     edit.commit();
                     break;
                 case R.id.activateButton:
-                    Utils.showConfirmDialog(this, "", getString(R.string.sched_activateButton),
-                        new StartSchedule(this, prefs, number));
+                    Utils.showConfirmDialog(this, getString(R.string.sched_activateButton),
+                            new StartSchedule(this, prefs, number));
                     break;
                 case CUSTOMLISTUPDATEBUTTONID:
                     CustomPackageList.showList(this, number);
@@ -310,30 +309,24 @@ BlacklistListener
         }).start();
     }
 
-    public void setTimeLeftTextView(int number)
-    {
+    @SuppressLint("SetTextI18n")
+    public void setTimeLeftTextView(int number) {
         View view = viewList.get(number);
-        if(view != null)
-        {
-            TextView timeLeftTextView = (TextView) view.findViewById(R.id.sched_timeLeft);
+        if (view != null) {
+            TextView timeLeftTextView = view.findViewById(R.id.sched_timeLeft);
             long timePlaced = prefs.getLong(
-                Constants.PREFS_SCHEDULES_TIMEPLACED + number, 0);
-            long repeat = (long)(prefs.getInt(
-                Constants.PREFS_SCHEDULES_REPEATTIME + number, 0) *
-                AlarmManager.INTERVAL_DAY);
+                    Constants.PREFS_SCHEDULES_TIMEPLACED + number, 0);
+            long repeat = prefs.getInt(
+                    Constants.PREFS_SCHEDULES_REPEATTIME + number, 0) *
+                    AlarmManager.INTERVAL_DAY;
             long timePassed = System.currentTimeMillis() - timePlaced;
             long timeLeft = prefs.getLong(
-                Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT + number, 0) - timePassed;
-            if(!prefs.getBoolean(Constants.PREFS_SCHEDULES_ENABLED + number, false))
-            {
+                    Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT + number, 0) - timePassed;
+            if (!prefs.getBoolean(Constants.PREFS_SCHEDULES_ENABLED + number, false)) {
                 timeLeftTextView.setText("");
-            }
-            else if(repeat <= 0)
-            {
+            } else if (repeat <= 0) {
                 timeLeftTextView.setText(getString(R.string.sched_warningIntervalZero));
-            }
-            else
-            {
+            } else {
                 timeLeftTextView.setText(getString(R.string.sched_timeLeft) + ": " + (timeLeft / 1000 / 60 / 60f));
             }
         }
@@ -371,8 +364,8 @@ BlacklistListener
     public void removeSecondaryButton(LinearLayout parent, View v)
     {
         int id = (v != null) ? v.getId() : -1;
-        Button bt = (Button) parent.findViewById(CUSTOMLISTUPDATEBUTTONID);
-        CheckBox cb = (CheckBox) parent.findViewById(EXCLUDESYSTEMCHECKBOXID);
+        Button bt = parent.findViewById(CUSTOMLISTUPDATEBUTTONID);
+        CheckBox cb = parent.findViewById(EXCLUDESYSTEMCHECKBOXID);
         if(bt != null && id != CUSTOMLISTUPDATEBUTTONID)
         {
             parent.removeView(bt);
@@ -390,46 +383,46 @@ BlacklistListener
             if(prefs.getBoolean(Constants.PREFS_SCHEDULES_ENABLED + (i + 1), false))
             {
                 long timePassed = System.currentTimeMillis() - prefs.getLong(
-                    Constants.PREFS_SCHEDULES_TIMEPLACED + (i + 1), 0);
+                        Constants.PREFS_SCHEDULES_TIMEPLACED + (i + 1), 0);
                 long timeLeft = prefs.getLong(
-                    Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT + (i + 1), 0) -
-                    timePassed;
-                long repeat = (long)(prefs.getInt(
-                    Constants.PREFS_SCHEDULES_REPEATTIME + (i + 1), 0) *
-                    AlarmManager.INTERVAL_DAY);
+                        Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT + (i + 1), 0) -
+                        timePassed;
+                long repeat = prefs.getInt(
+                        Constants.PREFS_SCHEDULES_REPEATTIME + (i + 1), 0) *
+                        AlarmManager.INTERVAL_DAY;
                 handleAlarms.cancelAlarm(i + 1);
                 handleAlarms.setAlarm(i, timeLeft, repeat);
             }
 
             // move settings one place back
             edit.putBoolean(Constants.PREFS_SCHEDULES_ENABLED + i,
-                prefs.getBoolean(Constants.PREFS_SCHEDULES_ENABLED + (i + 1), false));
+                    prefs.getBoolean(Constants.PREFS_SCHEDULES_ENABLED + (i + 1), false));
             edit.putBoolean(Constants.PREFS_SCHEDULES_EXCLUDESYSTEM + i,
-                prefs.getBoolean(Constants.PREFS_SCHEDULES_EXCLUDESYSTEM + (i + 1), false));
+                    prefs.getBoolean(Constants.PREFS_SCHEDULES_EXCLUDESYSTEM + (i + 1), false));
             edit.putInt(Constants.PREFS_SCHEDULES_HOUROFDAY + i,
-                prefs.getInt(Constants.PREFS_SCHEDULES_HOUROFDAY + (i + 1), 0));
+                    prefs.getInt(Constants.PREFS_SCHEDULES_HOUROFDAY + (i + 1), 0));
             edit.putInt(Constants.PREFS_SCHEDULES_REPEATTIME + i,
-                prefs.getInt(Constants.PREFS_SCHEDULES_REPEATTIME + (i + 1), 0));
+                    prefs.getInt(Constants.PREFS_SCHEDULES_REPEATTIME + (i + 1), 0));
             edit.putInt(Constants.PREFS_SCHEDULES_MODE + i,
-                prefs.getInt(Constants.PREFS_SCHEDULES_MODE + (i + 1), 0));
+                    prefs.getInt(Constants.PREFS_SCHEDULES_MODE + (i + 1), 0));
             edit.putInt(Constants.PREFS_SCHEDULES_SUBMODE + i,
-                prefs.getInt(Constants.PREFS_SCHEDULES_SUBMODE + (i + 1), 0));
+                    prefs.getInt(Constants.PREFS_SCHEDULES_SUBMODE + (i + 1), 0));
             edit.putLong(Constants.PREFS_SCHEDULES_TIMEPLACED + i,
-                prefs.getLong(Constants.PREFS_SCHEDULES_TIMEPLACED + (i + 1),
-                System.currentTimeMillis()));
+                    prefs.getLong(Constants.PREFS_SCHEDULES_TIMEPLACED + (i + 1),
+                            System.currentTimeMillis()));
             edit.putLong(Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT + i,
-                prefs.getLong(Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT + (i + 1), 0));
+                    prefs.getLong(Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT + (i + 1), 0));
             edit.commit();
 
             // update tags on view elements
             View view = viewList.get(i + 1);
-            Button updateButton = (Button) view.findViewById(R.id.updateButton);
-            Button removeButton = (Button) view.findViewById(R.id.removeButton);
-            Button customListUpdateButton = (Button) view.findViewById(CUSTOMLISTUPDATEBUTTONID);
-            CheckBox cb = (CheckBox) view.findViewById(R.id.checkbox);
-            CheckBox excludeSystemCB = (CheckBox) view.findViewById(EXCLUDESYSTEMCHECKBOXID);
-            Spinner spinner = (Spinner) view.findViewById(R.id.sched_spinner);
-            Spinner spinnerSubModes = (Spinner) view.findViewById(R.id.sched_spinnerSubModes);
+            Button updateButton = view.findViewById(R.id.updateButton);
+            Button removeButton = view.findViewById(R.id.removeButton);
+            Button customListUpdateButton = view.findViewById(CUSTOMLISTUPDATEBUTTONID);
+            CheckBox cb = view.findViewById(R.id.checkbox);
+            CheckBox excludeSystemCB = view.findViewById(EXCLUDESYSTEMCHECKBOXID);
+            Spinner spinner = view.findViewById(R.id.sched_spinner);
+            Spinner spinnerSubModes = view.findViewById(R.id.sched_spinnerSubModes);
 
             updateButton.setTag(i);
             removeButton.setTag(i);
@@ -444,7 +437,7 @@ BlacklistListener
             {
                 excludeSystemCB.setTag(i);
             }
-            
+
             renameCustomListFile(i);
         }
         removePreferenceEntries(total);
@@ -464,15 +457,15 @@ BlacklistListener
     public void renameCustomListFile(int number)
     {
         FileReaderWriter frw = new FileReaderWriter(defaultPrefs.getString(
-            Constants.PREFS_PATH_BACKUP_DIRECTORY, FileCreationHelper
-            .getDefaultBackupDirPath()), SCHEDULECUSTOMLIST + (number + 1));
+                Constants.PREFS_PATH_BACKUP_DIRECTORY, FileCreationHelper
+                        .getDefaultBackupDirPath()), SCHEDULECUSTOMLIST + (number + 1));
         frw.rename(SCHEDULECUSTOMLIST + number);
     }
     public void removeCustomListFile(int number)
     {
         FileReaderWriter frw = new FileReaderWriter(defaultPrefs.getString(
-            Constants.PREFS_PATH_BACKUP_DIRECTORY, FileCreationHelper
-            .getDefaultBackupDirPath()), SCHEDULECUSTOMLIST + number);
+                Constants.PREFS_PATH_BACKUP_DIRECTORY, FileCreationHelper
+                        .getDefaultBackupDirPath()), SCHEDULECUSTOMLIST + number);
         frw.delete();
     }
     public void transferOldValues()
@@ -484,9 +477,9 @@ BlacklistListener
             edit.putInt("repeatTime0", prefs.getInt(Constants.PREFS_SCHEDULES_REPEATTIME, 0));
             edit.putInt("scheduleMode0", prefs.getInt(Constants.PREFS_SCHEDULES_MODE, 0));
             edit.putLong("timePlaced0", prefs.getLong(
-                Constants.PREFS_SCHEDULES_TIMEPLACED, System.currentTimeMillis()));
+                    Constants.PREFS_SCHEDULES_TIMEPLACED, System.currentTimeMillis()));
             edit.putLong("timeUntilNextEvent0", prefs.getLong(
-                Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT, 0));
+                    Constants.PREFS_SCHEDULES_TIMEUNTILNEXTEVENT, 0));
             edit.remove(Constants.PREFS_SCHEDULES_ENABLED);
             edit.remove(Constants.PREFS_SCHEDULES_HOUROFDAY);
             edit.remove(Constants.PREFS_SCHEDULES_REPEATTIME);
@@ -501,7 +494,8 @@ BlacklistListener
         Context context;
         SharedPreferences preferences;
         int scheduleNumber;
-        public StartSchedule(Context context, SharedPreferences preferences, int scheduleNumber)
+
+        StartSchedule(Context context, SharedPreferences preferences, int scheduleNumber)
         {
             this.context = context;
             this.preferences = preferences;
@@ -512,7 +506,7 @@ BlacklistListener
             int mode = preferences.getInt(Constants.PREFS_SCHEDULES_MODE + scheduleNumber, 0);
             int subMode = preferences.getInt(Constants.PREFS_SCHEDULES_SUBMODE + scheduleNumber, 2);
             boolean excludeSystem = preferences.getBoolean(
-                Constants.PREFS_SCHEDULES_EXCLUDESYSTEM + scheduleNumber, false);
+                    Constants.PREFS_SCHEDULES_EXCLUDESYSTEM + scheduleNumber, false);
             HandleScheduledBackups handleScheduledBackups = new HandleScheduledBackups(context);
             handleScheduledBackups.initiateBackup(scheduleNumber, mode, subMode + 1, excludeSystem);
         }

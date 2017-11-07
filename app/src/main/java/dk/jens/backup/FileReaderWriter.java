@@ -15,7 +15,8 @@ public class FileReaderWriter
     static final String TAG = OAndBackup.TAG;
 
     File file;
-    public FileReaderWriter(String absolutePath)
+
+    FileReaderWriter(String absolutePath)
     {
         this.file = new File(absolutePath);
     }
@@ -23,7 +24,8 @@ public class FileReaderWriter
     {
         this.file = new File(rootDirectoryPath, name);
     }
-    public boolean putString(String string, boolean append)
+
+    public void putString(String string, boolean append)
     {
         if(string != null)
         {
@@ -34,18 +36,17 @@ public class FileReaderWriter
                     FileWriter fw = new FileWriter(file.getAbsoluteFile(), append);
                     BufferedWriter bw = new BufferedWriter(fw);
                     bw.write(string + "\n");
-                    bw.close();        
+                    bw.close();
                 }
             }
             catch(IOException e)
             {
                 Log.i(TAG, e.toString());
             }
-            return true;
         }
-        return false;
     }
-    public String read()
+
+    String read()
     {
         BufferedReader reader = null;
         try
@@ -56,7 +57,7 @@ public class FileReaderWriter
             String line;
             while((line = reader.readLine()) != null)
             {
-                sb.append(line + "\n");
+                sb.append(line).append("\n");
             }
             return sb.toString();
         }
@@ -100,7 +101,8 @@ public class FileReaderWriter
     {
         putString("", false);
     }
-    public boolean rename(String newName)
+
+    public void rename(String newName)
     {
         if(file.exists())
         {
@@ -110,12 +112,11 @@ public class FileReaderWriter
             {
                 file = newFile;
             }
-            return renamed;
         }
-        return false;
     }
-    public boolean delete()
+
+    public void delete()
     {
-        return file.delete();
+        file.delete();
     }
 }

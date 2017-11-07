@@ -3,18 +3,17 @@ package dk.jens.backup.ui.dialogs;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import dk.jens.backup.ActionListener;
 import dk.jens.backup.AppInfo;
 import dk.jens.backup.BackupRestoreHelper;
 import dk.jens.backup.Constants;
 import dk.jens.backup.OAndBackup;
 import dk.jens.backup.R;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class BackupRestoreOptionsDialogFragment extends DialogFragment
 {
@@ -34,35 +33,36 @@ public class BackupRestoreOptionsDialogFragment extends DialogFragment
         Bundle arguments = getArguments();
         final AppInfo appInfo = arguments.getParcelable("appinfo");
         BackupRestoreHelper.ActionType actionType =
-            (BackupRestoreHelper.ActionType) arguments.getSerializable(
-            Constants.BUNDLE_ACTIONTYPE);
+                (BackupRestoreHelper.ActionType) arguments.getSerializable(
+                        Constants.BUNDLE_ACTIONTYPE);
+        assert appInfo != null;
         boolean showApkBtn = (actionType == BackupRestoreHelper.ActionType
-            .BACKUP) ? appInfo.getSourceDir().length() > 0 :
-            appInfo.getBackupMode() != AppInfo.MODE_DATA;
+                .BACKUP) ? appInfo.getSourceDir().length() > 0 :
+                appInfo.getBackupMode() != AppInfo.MODE_DATA;
         boolean showDataBtn = actionType == BackupRestoreHelper.ActionType
-            .BACKUP || appInfo.isInstalled() && appInfo.getBackupMode() !=
-            AppInfo.MODE_APK;
+                .BACKUP || appInfo.isInstalled() && appInfo.getBackupMode() !=
+                AppInfo.MODE_APK;
         boolean showBothBtn = (actionType == BackupRestoreHelper.ActionType
-            .BACKUP) ? appInfo.getSourceDir().length() > 0 : appInfo
-            .getBackupMode() != AppInfo.MODE_APK && appInfo.getBackupMode() !=
-            AppInfo.MODE_DATA;
+                .BACKUP) ? appInfo.getSourceDir().length() > 0 : appInfo
+                .getBackupMode() != AppInfo.MODE_APK && appInfo.getBackupMode() !=
+                AppInfo.MODE_DATA;
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(appInfo.getLabel());
         int dialogMessage = actionType == BackupRestoreHelper.ActionType
-            .BACKUP ? R.string.backup : R.string.restore;
+                .BACKUP ? R.string.backup : R.string.restore;
         builder.setMessage(dialogMessage);
         if(showApkBtn) {
             builder.setNegativeButton(R.string.handleApk, (dialog, id) -> {
                 for (ActionListener listener : listeners)
                     listener.onActionCalled(appInfo,
-                        actionType, AppInfo.MODE_APK);
+                            actionType, AppInfo.MODE_APK);
             });
         }
         if(showDataBtn) {
             builder.setNeutralButton(R.string.handleData, (dialog, id) -> {
                 for (ActionListener listener : listeners)
                     listener.onActionCalled(appInfo,
-                        actionType, AppInfo.MODE_DATA);
+                            actionType, AppInfo.MODE_DATA);
             });
         }
         if(showBothBtn) {
@@ -74,7 +74,7 @@ public class BackupRestoreOptionsDialogFragment extends DialogFragment
             builder.setPositiveButton(textId, (dialog, id) -> {
                 for(ActionListener listener : listeners)
                     listener.onActionCalled(appInfo,
-                        actionType, AppInfo.MODE_BOTH);
+                            actionType, AppInfo.MODE_BOTH);
             });
         }
         return builder.create();

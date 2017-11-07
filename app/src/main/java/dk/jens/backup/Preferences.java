@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.view.MenuItem;
+
 import dk.jens.backup.ui.FileBrowser;
 import dk.jens.backup.ui.LanguageHelper;
 
@@ -17,14 +17,14 @@ public class Preferences extends PreferenceActivity implements SharedPreferences
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
         FileBrowserEditTextPreference backupFolderPref =
-            (FileBrowserEditTextPreference) findPreference(
-            Constants.PREFS_PATH_BACKUP_DIRECTORY);
+                (FileBrowserEditTextPreference) findPreference(
+                        Constants.PREFS_PATH_BACKUP_DIRECTORY);
         // det ser ikke ud til at setDefaultValue() virker som den skal
         if(backupFolderPref.getText() == null)
         {
             backupFolderPref.setText(FileCreationHelper.getDefaultBackupDirPath());
         }
-        if(android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN)
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN && getActionBar() != null)
         {
             getActionBar().setDisplayHomeAsUpEnabled(true);
         }
@@ -39,7 +39,7 @@ public class Preferences extends PreferenceActivity implements SharedPreferences
         // activities when setting locale so it can't be done in onCreate
         // http://stackoverflow.com/a/20057397
         ListPreference languages = (ListPreference) findPreference(
-            Constants.PREFS_LANGUAGES);
+                Constants.PREFS_LANGUAGES);
         if(languages != null)
             LanguageHelper.initLanguage(this, languages.getValue());
     }
@@ -49,8 +49,8 @@ public class Preferences extends PreferenceActivity implements SharedPreferences
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         FileBrowserEditTextPreference backupFolderPref =
-            (FileBrowserEditTextPreference) findPreference(
-            Constants.PREFS_PATH_BACKUP_DIRECTORY);
+                (FileBrowserEditTextPreference) findPreference(
+                        Constants.PREFS_PATH_BACKUP_DIRECTORY);
         if(FileBrowser.getPath() != null)
         {
             backupFolderPref.getEditText().setText(FileBrowser.getPath());
